@@ -5,11 +5,11 @@ from app.services.telegram_service import get_file_from_telegram
 cortex = Cortex()
 
 
-async def process_text_message(text: str, prompt: str = None) -> str:
-    cortex.add_user_message(text)
-    text = cortex.get_chat_request()
+async def process_text_message(user_id: str, text: str, prompt: str = None) -> str:
+    cortex.add_user_message(user_id, text)
+    text = cortex.get_chat_request(user_id)
     resp =  gemini_service.generate_content([prompt, text])
-    cortex.add_agent_message(resp)
+    cortex.add_agent_message(user_id, resp)
     return resp
 
 

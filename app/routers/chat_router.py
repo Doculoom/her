@@ -2,18 +2,18 @@ from fastapi import APIRouter, Request
 
 from app.services.message_handler import process_text_message, process_image_message, process_image_url_message
 from app.services.telegram_service import send_telegram_message
+from app.utils.prompts import PromptGenerator
 
 router = APIRouter()
 
 
 @router.post("/telegram/webhook")
 async def telegram_webhook(request: Request):
-    system_prompt = (
-            "You are a helpful and friendly chatbot. "
-            "Keep your responses brief, concise, and in the style of a casual conversation with a friend. "
-            "Avoid being overly formal or robotic."
-        )
     update = await request.json()
+    user_details = update.get('message', {}).get('from')
+    user_details["user_channel"] = "Telegram"
+    system_prompt = PromptGenerator.generate_system_prompt(user_details)
+    print(system_prompt)
 
     if "message" in update:
         chat_id = update["message"]["chat"]["id"]

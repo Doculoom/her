@@ -40,5 +40,5 @@ you: <response>
 user: <message>
 you: <response>
 
-Use this history to understand the context of the conversation and respond accordingly.
-"""
+Use this history to understand the context of the conversation and reply with your next message. Dont respond with you: 
+respond directly"""

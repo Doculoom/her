@@ -1,14 +1,35 @@
+from datetime import datetime
+
 from app.memory.cortex import Cortex
 from app.services.llm_services.gemini_service import gemini_service
 from app.services.telegram_service import get_file_from_telegram
+from app.utils.cloud_tasks import add_to_cloud_tasks
 
 cortex = Cortex()
+
+
+def add_message_to_queue(
+        user_id: str,
+        channel_type: str,
+        channel_id: str,
+        message: str,
+        timestamp: datetime = None
+):
+    payload = {
+        "user_id": user_id,
+        "channel_type": channel_type,
+        "channel_id": channel_id,
+        "text": message,
+    }
+
+    response = add_to_cloud_tasks(payload)
+    return response
 
 
 async def process_text_message(user_id: str, text: str, prompt: str = None) -> str:
     cortex.add_user_message(user_id, text)
     text = cortex.get_chat_request(user_id)
-    resp =  gemini_service.generate_content([prompt, text])
+    resp = gemini_service.generate_content([prompt, text])
     cortex.add_agent_message(user_id, resp)
     return resp
 

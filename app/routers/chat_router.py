@@ -1,23 +1,34 @@
-from fastapi import APIRouter, Request
+import asyncio
+from http.client import HTTPException
 
-from app.services.message_handler import process_text_message, process_image_message, process_image_url_message
+from fastapi import APIRouter, Request, BackgroundTasks
+
+from app.services.message_handler import *
 from app.services.telegram_service import send_telegram_message
+from app.services.vault_service import store_user_channel
+from app.utils.cache import seen_channels, locks
 from app.utils.prompts import PromptGenerator
 
 router = APIRouter()
 
 
 @router.post("/telegram/webhook")
-async def telegram_webhook(request: Request):
+async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     update = await request.json()
     user_details = update.get('message', {}).get('from')
     user_details["user_channel"] = "Telegram"
     system_prompt = PromptGenerator.generate_system_prompt(user_details)
     user_id = user_details["id"]
+    username = user_details["username"]
 
     if "message" in update:
         chat_id = update["message"]["chat"]["id"]
         text = update["message"].get("text", "")
+
+        key = (str(username), chat_id)
+        if key not in seen_channels:
+            background_tasks.add_task(store_user_channel, username, chat_id)
+            seen_channels.add(key)
 
         if "photo" in update["message"]:
             photo = update["message"]["photo"][-1]
@@ -29,6 +40,37 @@ async def telegram_webhook(request: Request):
         else:
             reply_text = await process_text_message(user_id, text, system_prompt)
 
-        send_telegram_message(chat_id, reply_text)
+        add_message_to_queue(user_id, "telegram", chat_id, reply_text)
 
     return {"ok": True}
+
+
+# @todo: setup distributed locking when we scale
+@router.post("/queue")
+async def add_to_queue(request: Request):
+    try:
+        task_data = await request.json()
+        if not all(key in task_data for key in ["user_id", "channel_type", "channel_id", "text"]):
+            raise HTTPException()
+
+        lock_key = (task_data["user_id"], task_data["channel_type"].lower(), task_data["channel_id"])
+
+        if lock_key not in locks:
+            locks[lock_key] = asyncio.Lock()
+        lock = locks[lock_key]
+
+        async with lock:
+            try:
+                if task_data["channel_type"].lower() == "telegram":
+                    send_telegram_message(int(task_data["channel_id"]), task_data["text"])
+                else:
+                    raise HTTPException()
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                raise HTTPException()
+
+        return {"status": "Message processed and sent"}
+    except ValueError as e:
+        print(f"Invalid JSON: {e}")
+        raise HTTPException()
+

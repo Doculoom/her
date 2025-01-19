@@ -15,6 +15,7 @@ router = APIRouter()
 @router.post("/telegram/webhook")
 async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     update = await request.json()
+    print(update)
     user_details = update.get('message', {}).get('from')
     user_details["user_channel"] = "Telegram"
     system_prompt = PromptGenerator.generate_system_prompt(user_details)

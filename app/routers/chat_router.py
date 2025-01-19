@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from http.client import HTTPException
 
 from fastapi import APIRouter, Request, BackgroundTasks
@@ -19,8 +20,8 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     user_details = update.get('message', {}).get('from')
     user_details["user_channel"] = "Telegram"
     system_prompt = PromptGenerator.generate_system_prompt(user_details)
-    user_id = user_details["id"]
-    username = user_details["username"]
+    user_id = user_details.get("id", "")
+    username = user_details.get("username", user_details.get("first_name", uuid.uuid1()) + user_details.get("last_name"))
 
     if "message" in update:
         chat_id = update["message"]["chat"]["id"]

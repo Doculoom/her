@@ -137,12 +137,13 @@ with new context
 recent activities, life events, interests, facts 
 - Do not generate very similar memories
 - No need to generate memories of greetings or something that need not to be remembered
+- Do not include memory details from the example
 
 Examples of good memories:
-1. Ravi used to like chocolate icecream but now he is preferring strawberry after meeting his girlfriend 
-2. Jacob wants to attend HC hackathon next week
-3. On Feb 5th, Monday morning Herbert said he got his vaccination
-4. From 2025 Jan 1st Anjali began journaling and she requested to be remind her to journal every other week
+1. <user> used to like chocolate icecream but now he is preferring strawberry after meeting his girlfriend 
+2. <user> wants to attend HC hackathon next week
+3. On Feb 5th, Monday morning <user> said he got his vaccination
+4. From 2025 Jan 1st <user> began journaling and she requested to be remind her to journal every other week
 
 
 NOTE: Be a good friend by remembering the context of the conversation for the future.
@@ -174,34 +175,35 @@ output reflects the most current context
 - Provide a coherent update that feels like an organic continuation of the journal 
 - Please try to maintain some context of old memory along with new context
 - If the new memory is not relevant to existing ones, return new memory object with empty memory_id
+- Do not include memory details from the example
 
 Example:
 
 existing_memories:
     memory:
         memory_id: 1234
-        text: Harsh likes orange color. He enjoys Korean cuisine
+        text: <user> likes orange color. He enjoys Korean cuisine
 
     memory:
         memory_id: 1235
-        text: Harsh has a marathon in second week of february 
+        text: <user> has a marathon in second week of february 
 
 new_memories: 
-    - Harsh while running at bay view he hurt his leg on first week of february 
-    - Harsh dont enjoy korean food
-    - Harsh's friend Jade is gonna visit from korea in March
+    - <user> while running at bay view he hurt his leg on first week of february 
+    - <user> dont enjoy korean food
+    - <user> friend Jade is gonna visit from korea in March
 
 updated_memories
     memory:
         memory_id: 1234 
-        text: Harsh likes orange color. He used to like korean cuisine but recently he doesnt enjoy it anymore
+        text: <user> likes orange color. He used to like korean cuisine but recently he doesnt enjoy it anymore
 
-    memory: memory_id: 1235 text: Harsh was training for a marathon in second week of february but he hurt his leg 
+    memory: memory_id: 1235 text: <user> was training for a marathon in second week of february but he hurt his leg 
     and may not be able to do the marathon
 
     memory:
         memory_id: None
-        text: Harsh's friend Jade is gonna visit from korea in March
+        text: <user> friend Jade is gonna visit from korea in March
 
 Note:
 

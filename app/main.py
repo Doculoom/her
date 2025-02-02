@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from app.routers import chat_router
 
 app = FastAPI(title="Her Service", version="1.0.0")

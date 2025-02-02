@@ -136,7 +136,7 @@ with new context
 - Separate memories into different buckets e.g., personality traits, preferences, 
 recent activities, life events, interests, facts 
 - Do not generate very similar memories
-- No need to generate memories of greetings or something that need not to be remembered
+- No need to generate memories of greetings or something that need not be remembered
 - Do not include memory details from the example
 
 Examples of good memories:
@@ -174,7 +174,7 @@ output reflects the most current context
  than creating redundancy 
 - Provide a coherent update that feels like an organic continuation of the journal 
 - Please try to maintain some context of old memory along with new context
-- If the new memory is not relevant to existing ones, return new memory object with empty memory_id
+- If the new memory is not relevant to existing ones, return new memory object with only text
 - Do not include memory details from the example
 
 Example:

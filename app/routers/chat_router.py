@@ -1,18 +1,19 @@
 import asyncio
 from datetime import timedelta
 
-from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Depends
 
 from app.services.message_handler import *
 from app.services.telegram_service import send_telegram_message
 from app.services.vault_service import store_user_channel
 from app.utils.cache import seen_channels, locks
+from app.utils.helper import verify_telegram_secret_token
 from app.utils.prompts import PromptGenerator
 
 router = APIRouter()
 
 
-@router.post("/telegram/webhook")
+@router.post("/telegram/webhook", dependencies=[Depends(verify_telegram_secret_token)])
 async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     data = await request.json()
     print(data)
@@ -21,12 +22,14 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
 
     system_prompt = PromptGenerator.generate_system_prompt(user_details)
 
-    user_id = user_details.get("id")
+    user_id = str(user_details.get("id"))
     user_first_name = user_details.get("first_name", user_details.get("username", user_id))
 
     if "message" in data:
         chat_id = data["message"]["chat"]["id"]
         text = data["message"].get("text", "")
+
+        print(f"id: {user_id}, name: {user_first_name}, text: {text}")
 
         key = (str(user_id), chat_id)
         if key not in seen_channels:

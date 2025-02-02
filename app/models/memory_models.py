@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -42,7 +42,7 @@ class UpdatedMemory(BaseModel):
 
     Represents a memory that has been updated with new context.
     """
-    memory_id: str = Field(default=None)
+    memory_id: Optional[str] = Field(default=None, description="Optional field")
     updated_memory: str = Field(description="Old memory updated with new context or a new memory")
 
 

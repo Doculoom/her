@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Depends
 
+from app.services.firestore.users_service import FirestoreUserService
 from app.services.message_handler import *
 from app.services.telegram_service import send_telegram_message
 from app.services.vault_service import store_user_channel
@@ -11,6 +12,7 @@ from app.utils.helper import verify_telegram_secret_token
 from app.utils.prompts import PromptGenerator
 
 router = APIRouter()
+user_service = FirestoreUserService()
 
 
 @router.post("/telegram/webhook", dependencies=[Depends(verify_telegram_secret_token)])
@@ -113,4 +115,21 @@ async def test_schedule(request: Request):
         payload=payload,
         timestamp=future_time,
     )
+    return {"ok": True}
+
+
+@router.post("/test/broadcast")
+async def test_broadcast(request: Request):
+    data = await request.json()
+    users = user_service.list_users()
+
+    for user in users:
+        payload = {
+            "user_id": user["user_id"],
+            "channel_type": user["channel_type"],
+            "channel_id": user["channel_id"],
+            "text": data.get('text').format(user["user_id"])
+        }
+        add_to_cloud_tasks(payload=payload)
+
     return {"ok": True}

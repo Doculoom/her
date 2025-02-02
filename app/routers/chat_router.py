@@ -87,6 +87,10 @@ async def summarize(request: Request):
 
     if not user_id:
         raise HTTPException(status_code=400, detail="Missing user_id")
+
+    if not user_name:
+        raise HTTPException(status_code=400, detail="Missing user_name")
+
     cortex.save_memories_to_vault(user_id, user_name)
 
     return {"status": "summarized", "user_id": user_id}

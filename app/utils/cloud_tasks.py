@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Dict, Optional
+from typing import Optional
 
 from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
@@ -9,7 +9,7 @@ from app.core.config import settings
 
 
 def add_to_cloud_tasks(
-    payload: Dict,
+    payload: dict,
     timestamp: Optional[datetime] = None,
     task_type: str = "queue"
 ):
@@ -50,7 +50,7 @@ def add_to_cloud_tasks(
 
 def reschedule_cloud_task(
     existing_task_name: str,
-    payload: Dict,
+    payload: dict,
     timestamp: Optional[datetime.datetime] = None,
     task_type: str = "summarize"
 ):

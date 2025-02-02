@@ -173,7 +173,7 @@ output reflects the most current context
  than creating redundancy 
 - Provide a coherent update that feels like an organic continuation of the journal 
 - Please try to maintain some context of old memory along with new context
-- If the new memory is not relevant to existing ones, create a new one with empty/no memory_id
+- If the new memory is not relevant to existing ones, return new memory object with empty memory_id
 
 Example:
 

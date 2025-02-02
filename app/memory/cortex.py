@@ -48,6 +48,7 @@ class Cortex:
         updated_m = agent_registry.get("summary").update_memories(old_memories_text, new_memories_text)
 
         for m in updated_m.updated_memories:
+            print(f"Memory: {m}")
             if m.memory_id:
                 agent_registry.get("vault").update_memory(user_id, m.memory_id, m.updated_memory)
             else:

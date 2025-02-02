@@ -1,6 +1,11 @@
 from datetime import datetime
+from typing import Annotated
+
+from fastapi import Request, Header, HTTPException
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+
+from app.core.config import settings
 
 
 def get_current_date_time_info():
@@ -34,3 +39,13 @@ def messages_to_string(user_name, messages):
         elif isinstance(message, SystemMessage):
             conversation_string += f"System: {message.content}\n"
     return conversation_string
+
+
+async def verify_telegram_secret_token(
+    request: Request,
+    x_telegram_bot_api_secret_token: Annotated[str, Header()] = None,
+):
+    token = settings.TELEGRAM_BOT_TOKEN.split(":")[0]
+    if x_telegram_bot_api_secret_token != token:
+        print(f"Forbidden: Invalid secret token. Got: {x_telegram_bot_api_secret_token}")
+        raise HTTPException(status_code=403, detail="Forbidden")

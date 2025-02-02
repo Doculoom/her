@@ -662,6 +662,22 @@ wheels = [
 ]
 
 [[package]]
+name = "google-cloud-firestore"
+version = "2.20.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "google-cloud-core" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ce/9b/7c2f746cd8ec3f08d02d5626d863c2486dd69eb0b1f77bdcd9b0fe15d478/google_cloud_firestore-2.20.0.tar.gz", hash = "sha256:ad863be58667233921e02f0b81aa94a816f5e63a707cb33c97b1aa357a50566d", size = 491103 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/3f/52fd16f3de3ed4ac2e3b7c728fb3b29b081791cf6292b74e4301ad489737/google_cloud_firestore-2.20.0-py2.py3-none-any.whl", hash = "sha256:505ef6951b56ea91f6762d99b3429ca6def6dceb254b4ba1ffc85e69b71414d7", size = 337765 },
+]
+
+[[package]]
 name = "google-cloud-resource-manager"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -896,6 +912,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "fastapi" },
+    { name = "google-cloud-firestore" },
     { name = "google-cloud-tasks" },
     { name = "google-generativeai" },
     { name = "ipykernel" },
@@ -915,6 +932,7 @@ dependencies = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.11.11" },
     { name = "fastapi", specifier = ">=0.115.6" },
+    { name = "google-cloud-firestore", specifier = ">=2.20.0" },
     { name = "google-cloud-tasks", specifier = ">=2.18.0" },
     { name = "google-generativeai", specifier = ">=0.8.3" },
     { name = "ipykernel", specifier = ">=6.29.5" },

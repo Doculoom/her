@@ -36,9 +36,12 @@ class Cortex:
     @staticmethod
     def save_memories_to_vault(user_id, user_name):
         messages = chat_buffer[user_id]
+
+        print(f"Messages: {messages}")
         old_memories_text = agent_registry.get("vault").retrieve_all_memories(user_id)
         new_memories = agent_registry.get("summary").generate_memory(user_name, messages)
 
+        print(f"old_memories_text: {old_memories_text}")
         new_memories_text = ''
 
         for i, m in enumerate(new_memories.memories):

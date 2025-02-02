@@ -80,20 +80,19 @@ async def add_to_queue(request: Request):
 
 
 @router.post("/summarize")
-async def summarize(request: Request):
+async def summarize(request: Request, background_tasks: BackgroundTasks):
     payload = await request.json()
     user_id = payload.get("user_id")
     user_name = payload.get("user_name")
 
     if not user_id:
         raise HTTPException(status_code=400, detail="Missing user_id")
-
     if not user_name:
         raise HTTPException(status_code=400, detail="Missing user_name")
 
-    cortex.save_memories_to_vault(str(user_id), user_name)
+    background_tasks.add_task(cortex.save_memories_to_vault, str(user_id), user_name)
 
-    return {"status": "summarized", "user_id": user_id}
+    return {"ok": True}
 
 
 @router.post("/test/schedule")

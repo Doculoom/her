@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     VAULT_API_URL: str = os.getenv("VAULT_API_URL")
     HER_API_URL: str = os.getenv("HER_API_URL")
     MAX_MESSAGES_PER_USER: int = os.getenv("MAX_MESSAGES_PER_USER", 20)
-    MEMORY_DUMP_SECONDS: int = os.getenv("MEMORY_DUMP_SECONDS", 240)
+    MEMORY_DUMP_SECONDS: int = int(os.getenv("MEMORY_DUMP_SECONDS", "240"))
 
     class Config:
         env_file = ".env"

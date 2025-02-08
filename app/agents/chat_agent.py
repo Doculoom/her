@@ -17,6 +17,7 @@ class ChatAgent(BaseAgent):
         curr_date, curr_day, curr_time, = get_current_date_time_info()
         memories = agent_registry.get("vault").retrieve_memories_text(user_id, fields=["user_id", "text"])
         messages = cortex.get_messages(channel_id, 10)
+        print(f'user_name: {user_name}, memories: {memories}')
 
         prompt = PromptTemplate.from_template(chat_agent_template)
         p = prompt.invoke({

@@ -120,7 +120,7 @@ async def test_broadcast(request: Request):
             "user_id": user["user_id"],
             "channel_type": user["channel_type"],
             "channel_id": user["channel_id"],
-            "text": data.get('text').format(user["user_id"])
+            "text": data.get('text').format(user["user_name"])
         }
         add_to_cloud_tasks(payload=payload)
 

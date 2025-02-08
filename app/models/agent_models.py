@@ -26,6 +26,12 @@ class HerResponse(BaseModel):
         Example. If the user with name Vinay is asking about his dog, you response could be "Vinay dog"
         """
     )
-    response: str = Field(
-        description="""Your response to the user based on the message history between you and the user"""
+    response: Optional[str] = Field(
+        description="""Your response to the user based on the message history between you and the user""",
+        default=None,
     )
+
+
+class ChatResponse(BaseModel):
+    message: Optional[str] = Field(description="The message if you want to initiate the chat", default=None)
+    user_id: Optional[str] = Field(description="The user_id for the user who you want to send the message", default=None)

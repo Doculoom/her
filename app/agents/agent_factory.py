@@ -2,6 +2,7 @@ from typing import Dict
 from langchain_core.messages import AIMessage
 
 from app.agents.base_agent import BaseAgent
+from app.agents.chat_agent import ChatAgent
 from app.agents.her_agent import HerAgent
 from app.agents.summary_agent import SummaryAgent
 from app.agents.vault_agent import VaultAgent
@@ -11,6 +12,7 @@ agent_registry: Dict[str, BaseAgent | VaultAgent | HerAgent | SummaryAgent] = {
     "her": HerAgent(),
     "vault": VaultAgent(),
     "summary": SummaryAgent(),
+    "chat": ChatAgent(),
 }
 
 

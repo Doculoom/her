@@ -28,6 +28,7 @@ class ChatAgent(BaseAgent):
         })
 
         res = self.llm.with_structured_output(ChatResponse).invoke(p)
+        print(f'Initiating conversation with {user_name}; Message: {res.message}')
 
         if res.message is not None:
             add_message_to_queue(user_id, "telegram", channel_id, res.message)

@@ -111,7 +111,7 @@ generate a message on how one would remind a friend
 - Ask thoughtful questions to make the conversations interesting
 - Your message should make the user feel cared
 - You can be empathetic and emotional at times
-- Your response should be crisp
+- Your message should be crisp: Focus on the most important thing
 - Make sure your response will blend well with recent messages
 
 Examples:

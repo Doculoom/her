@@ -84,7 +84,11 @@ async def summarize(request: Request, background_tasks: BackgroundTasks):
 @router.post("/chat")
 async def chat(background_tasks: BackgroundTasks):
     users = user_service.list_users()
-    background_tasks.add_task(agent_registry.get("chat").act, "Harsh", "thecourier5", "5819867749")
+    for user in users:
+        user_name = user.get("user_name")
+        user_id = user.get("user_id")
+        channel_id = user.get("channel_id")
+        background_tasks.add_task(agent_registry.get("chat").act, user_name, user_id, channel_id)
     return {"ok": True}
 
 

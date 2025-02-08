@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 from app.services.firestore.base import FirestoreBaseService
+from app.utils.helper import generate_chat_message
 
 
 class FirestoreUserService(FirestoreBaseService):
@@ -27,14 +28,20 @@ class FirestoreUserService(FirestoreBaseService):
         doc_ref.set(message)
         return doc_ref.id
 
-    def get_chat_messages(self, user_id: str, limit: int) -> List[BaseMessage]:
+    def get_chat_messages(self, user_id: str, limit: int) -> List[str]:
         messages_ref = self.chat_collection.document(user_id).collection("messages")
         query = (
             messages_ref
             .order_by("timestamp", direction=firestore.Query.ASCENDING)
             .limit(limit)
         )
-        return [self._convert_to_langchain_message(doc.to_dict()) for doc in query.stream()]
+        messages = []
+        for doc in query.stream():
+            doc = doc.to_dict()
+            message = generate_chat_message(doc["sender"], doc["name"], doc["content"], doc["timestamp"])
+            messages.append(message)
+
+        return messages
 
     def get_unflushed_chat_messages(self, user_id: str, limit: int = 200) -> List[Tuple[str, BaseMessage]]:
         messages_ref = self.chat_collection.document(user_id).collection("messages")

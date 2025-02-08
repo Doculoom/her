@@ -1,8 +1,5 @@
 import datetime
 import threading
-from collections import defaultdict, deque
-
-from langchain_core.messages import HumanMessage, AIMessage
 
 from app.agents.agent_factory import agent_registry
 from app.core.config import settings
@@ -10,28 +7,22 @@ from app.services.firestore.users_service import FirestoreUserService
 from app.utils.cache import scheduled_tasks
 from app.utils.cloud_tasks import reschedule_cloud_task, add_to_cloud_tasks
 
-
 user_service = FirestoreUserService()
 
 
 class Cortex:
-    def __init__(self, max_messages: int = settings.MAX_MESSAGES_PER_USER):
-        self.chat_history = defaultdict(lambda: deque(maxlen=max_messages))
-
-    def add_user_message(self, user_id: str, user_name: str, msg: str):
-        message = HumanMessage(content=msg, name=user_name)
-        self.chat_history[user_id].append(message)
+    @staticmethod
+    def add_user_message(user_id: str, user_name: str, msg: str):
         user_service.add_chat_message(user_id, {
             "sender": "user",
             "content": msg,
             "name": user_name,
         })
 
-    def add_agent_message(self, user_id: str, user_name: str, msg: AIMessage):
-        self.chat_history[user_id].append(msg)
+    def add_agent_message(self, user_id: str, user_name: str, msg: str):
         user_service.add_chat_message(user_id, {
             "sender": "agent",
-            "content": msg.content,
+            "content": msg,
             "name": user_name,
         })
 
@@ -42,9 +33,8 @@ class Cortex:
         ).start()
 
     @staticmethod
-    def get_messages(user_id, last_n=50):
+    def get_messages(user_id, last_n=settings.MAX_MESSAGES_PER_USER):
         history = user_service.get_chat_messages(user_id, last_n)
-        print(f"History: {history}")
         return history
 
     @staticmethod
@@ -53,7 +43,7 @@ class Cortex:
         res = user_service.get_unflushed_chat_messages(user_id)
         messages = [item[1] for item in res]
 
-        old_memories_text = agent_registry.get("vault").retrieve_all_memories(user_id)
+        old_memories_text = agent_registry.get("vault").retrieve_memories_text(user_id, ["id", "text"])
         new_memories = agent_registry.get("summary").generate_memory(user_name, messages)
 
         new_memories_text = ''

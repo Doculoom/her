@@ -3,51 +3,36 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Depends
 
+from app.agents.agent_factory import agent_registry
+from app.services.firestore.users_service import FirestoreUserService
 from app.services.message_handler import *
 from app.services.telegram_service import send_telegram_message
 from app.services.vault_service import store_user_channel
-from app.utils.cache import seen_channels, locks
+from app.utils.cache import locks
 from app.utils.helper import verify_telegram_secret_token
-from app.utils.prompts import PromptGenerator
 
 router = APIRouter()
+user_service = FirestoreUserService()
+seen_channels = set()
 
 
 @router.post("/telegram/webhook", dependencies=[Depends(verify_telegram_secret_token)])
 async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     data = await request.json()
-    print(data)
-    user_details = data.get('message', {}).get('from')
-    user_details["user_channel"] = "Telegram"
-
-    system_prompt = PromptGenerator.generate_system_prompt(user_details)
-
-    user_id = str(user_details.get("id"))
-    user_first_name = user_details.get("first_name", user_details.get("username", user_id))
+    details = data.get('message', {}).get('from')
+    user_id = str(details.get("id"))
+    user_name = details.get("first_name")
 
     if "message" in data:
         chat_id = data["message"]["chat"]["id"]
-        text = data["message"].get("text", "")
-
-        print(f"id: {user_id}, name: {user_first_name}, text: {text}")
-
+        print(f"user_id: {user_id}, user_name: {user_name}, chat_id: {chat_id}")
         key = (str(user_id), chat_id)
+
         if key not in seen_channels:
-            background_tasks.add_task(store_user_channel, user_id, chat_id)
+            background_tasks.add_task(store_user_channel, user_name, user_id, chat_id)
             seen_channels.add(key)
 
-        if "photo" in data["message"]:
-            photo = data["message"]["photo"][-1]
-            text = data["message"].get("caption", "Give a short description of the image")
-            file_id = photo["file_id"]
-            reply_text = await process_image_message(text, file_id, system_prompt)
-        elif text.startswith("http") and any(text.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png']):
-            reply_text = await process_image_url_message(text, text, system_prompt)
-        else:
-            reply_text = await process_text_message(user_first_name, user_id, text)
-
-        print(f"replay text: {reply_text}")
-        add_message_to_queue(user_id, "telegram", chat_id, reply_text)
+        background_tasks.add_task(handle_telegram_message, data)
 
     return {"ok": True}
 
@@ -58,7 +43,7 @@ async def add_to_queue(request: Request):
     try:
         task_data = await request.json()
         if not all(key in task_data for key in ["user_id", "channel_type", "channel_id", "text"]):
-            raise HTTPException()
+            raise HTTPException(status_code=400, detail="Bad request")
 
         lock_key = (task_data["user_id"], task_data["channel_type"].lower(), task_data["channel_id"])
 
@@ -70,16 +55,14 @@ async def add_to_queue(request: Request):
             try:
                 if task_data["channel_type"].lower() == "telegram":
                     send_telegram_message(int(task_data["channel_id"]), task_data["text"])
-                else:
-                    raise HTTPException()
             except Exception as e:
                 print(f"Error occurred: {e}")
-                raise HTTPException()
+                raise HTTPException(status_code=500, detail=e)
 
         return {"status": "Message processed and sent"}
     except ValueError as e:
         print(f"Invalid JSON: {e}")
-        raise HTTPException()
+        raise HTTPException(status_code=500, detail=e)
 
 
 @router.post("/summarize")
@@ -98,6 +81,13 @@ async def summarize(request: Request, background_tasks: BackgroundTasks):
     return {"ok": True}
 
 
+@router.post("/chat")
+async def chat(background_tasks: BackgroundTasks):
+    users = user_service.list_users()
+    background_tasks.add_task(agent_registry.get("chat").act, "Harsh", "thecourier5", "5819867749")
+    return {"ok": True}
+
+
 @router.post("/test/schedule")
 async def test_schedule(request: Request):
     data = await request.json()
@@ -113,4 +103,21 @@ async def test_schedule(request: Request):
         payload=payload,
         timestamp=future_time,
     )
+    return {"ok": True}
+
+
+@router.post("/test/broadcast")
+async def test_broadcast(request: Request):
+    data = await request.json()
+    users = user_service.list_users()
+
+    for user in users:
+        payload = {
+            "user_id": user["user_id"],
+            "channel_type": user["channel_type"],
+            "channel_id": user["channel_id"],
+            "text": data.get('text').format(user["user_id"])
+        }
+        add_to_cloud_tasks(payload=payload)
+
     return {"ok": True}

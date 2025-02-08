@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "doculoom-446020")
     GCP_LOCATION: str = os.getenv("GCP_LOCATION", "us-central1")
     CLOUD_TASKS_QUEUE: str = os.getenv("CLOUD_TASKS_QUEUE", "her-queue")
-    MODEL: str = os.getenv("GCP_PROJECT_ID", "gemini-2.0-flash-exp")
+    MODEL: str = os.getenv("MODEL", "gemini-2.0-pro-exp-02-05")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY")
     VAULT_API_URL: str = os.getenv("VAULT_API_URL")
     HER_API_URL: str = os.getenv("HER_API_URL")

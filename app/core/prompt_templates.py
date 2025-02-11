@@ -238,7 +238,7 @@ updated_memories
     and may not be able to do the marathon
 
     memory:
-        memory_id: None
+        memory_id: 
         text: <user> friend Jade is gonna visit from korea in March
 
 Note:

@@ -55,7 +55,7 @@ class Cortex:
         updated_m = agent_registry.get("summary").update_memories(old_memories_text, new_memories_text)
 
         for m in updated_m.updated_memories:
-            if m.memory_id:
+            if m.memory_id or m.memory_id != "None":
                 agent_registry.get("vault").update_memory(user_id, m.memory_id, m.updated_memory)
             else:
                 agent_registry.get("vault").create_memory(user_id, m.updated_memory)

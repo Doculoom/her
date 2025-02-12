@@ -245,11 +245,12 @@ updated_memories
         memory_id: 1234 
         text: <user> likes orange color. He used to like korean cuisine but recently he doesnt enjoy it anymore
 
-    memory: memory_id: 1235 text: <user> was training for a marathon in second week of february but he hurt his leg 
-    and may not be able to do the marathon
+    memory: 
+        memory_id: 1235 
+        text: <user> was training for a marathon in second week of february but he hurt his leg 
+        and may not be able to do the marathon
 
     memory:
-        memory_id: 
         text: <user> friend Jade is gonna visit from korea in March
 
 Note:

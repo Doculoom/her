@@ -33,7 +33,9 @@ You have the following features:
     
 """
 
-base_agent_template = common_agent_template + """
+base_agent_template = (
+    common_agent_template
+    + """
 You are chatting with {first_name} on {user_channel}.
 
 
@@ -69,14 +71,18 @@ Instructions:
     example: If the user is working on a weekend or watching movie on a weekday morning
 - Your response need not end with a question and you dont have to respond if there is no need
     example: If user says okay, you dont need to respond
+- Give importance to users last message, check previous messages only if needed
 
 Conversation:
 
 {messages}
 
 """
+)
 
-her_agent_template = base_agent_template + """
+her_agent_template = (
+    base_agent_template
+    + """
 Special Instructions:
 - Analyze the last few messages and suggest if we need to fetch users personal context from the vault
 - If we dont need personal context just respond to the message and set memories_needed to False 
@@ -85,8 +91,11 @@ Special Instructions:
 and agree to remind
 - Reminders can be one time or periodic
 """
+)
 
-vault_agent_template = base_agent_template + """
+vault_agent_template = (
+    base_agent_template
+    + """
 Memories:
 
 {memories}
@@ -99,8 +108,11 @@ next time
 - Use information from the memories and generate the response personalized to the user
 
 """
+)
 
-chat_agent_template = common_agent_template + """
+chat_agent_template = (
+    common_agent_template
+    + """
 Special Instructions:
 
 - Based on the memories, current_date, current_time and current_day, respond with text if you want
@@ -136,6 +148,7 @@ Chat history between you and the user:
 
 NOTE: If the user asks you not to message, you return the empty response
 """
+)
 
 summary_agent_template = """
 Current date: {current_date}, Current day: {current_day} Current time: {current_time}

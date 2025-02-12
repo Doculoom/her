@@ -54,8 +54,6 @@ class Cortex:
             user_name, messages
         )
 
-        print(f"old_memories_text: {old_memories_text}")
-
         new_memories_text = ""
 
         for i, m in enumerate(new_memories.memories):
@@ -66,15 +64,16 @@ class Cortex:
             old_memories_text, new_memories_text
         )
 
-        print(f"\n\n updated_memories: {updated_m.updated_memories}")
-
         for m in updated_m.updated_memories:
-            if m.memory_id or m.memory_id != "None":
+            print(m.memory_id, type(m.memory_id))
+            if m.memory_id is None or m.memory_id == "None":
+                print(f"Creating new memory: {m.updated_memory}")
+                agent_registry.get("vault").create_memory(user_id, m.updated_memory)
+            else:
+                print(f"Updating memory: {m.updated_memory}")
                 agent_registry.get("vault").update_memory(
                     user_id, m.memory_id, m.updated_memory
                 )
-            else:
-                agent_registry.get("vault").create_memory(user_id, m.updated_memory)
 
         message_ids = [msg[0] for msg in res]
         user_service.mark_messages_as_flushed(user_id, message_ids)

@@ -94,7 +94,8 @@ class VaultAgent(BaseAgent):
             print(f"Value error: {val_err}")
             raise
 
-    def retrieve_memories_text(self, user_id: str = None, fields: List[str] = None):
+    def retrieve_memories_text(self, user_id: str = None):
+        fields = ["user_id", "text"]
         field_str = ", ".join(fields)
         data = self.retrieve_all_memories(user_id, field_str)
         memories = defaultdict(str)

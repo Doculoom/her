@@ -32,10 +32,10 @@ class Cortex:
             },
         )
 
-        # if dump:
-        #     threading.Thread(
-        #         target=self.schedule_memory_dump, args=(user_id, user_name), daemon=True
-        #     ).start()
+        if dump:
+            threading.Thread(
+                target=self.schedule_memory_dump, args=(user_id, user_name), daemon=True
+            ).start()
 
     @staticmethod
     def get_messages(user_id, last_n=settings.MAX_MESSAGES_PER_USER):

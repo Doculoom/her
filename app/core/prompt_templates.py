@@ -174,6 +174,7 @@ recent activities, life events, interests, facts
 - If the user words like tomorrow, make sure you use the name of the day based on the current day
 - Always try to break down conversation into multiple simple memories
 - Focus more on user response rather than agent
+- Always try to include dates, we might not need the exact time
 - Do not include memory details from the examples provided below
 
 

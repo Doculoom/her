@@ -14,22 +14,28 @@ class ChatAgent(BaseAgent):
 
         cortex = Cortex()
 
-        curr_date, curr_day, curr_time, = get_current_date_time_info()
-        memories = agent_registry.get("vault").retrieve_memories_text(user_id, fields=["user_id", "text"])
+        (
+            curr_date,
+            curr_day,
+            curr_time,
+        ) = get_current_date_time_info()
+        memories = agent_registry.get("vault").retrieve_memories_text(user_id)
         messages = cortex.get_messages(channel_id, 10)
-        print(f'user_name: {user_name}, memories: {memories}')
+        print(f"user_name: {user_name}, memories: {memories}")
 
         prompt = PromptTemplate.from_template(chat_agent_template)
-        p = prompt.invoke({
-            "current_day": curr_day,
-            "current_time": curr_time,
-            "current_date": curr_date,
-            "memories": memories,
-            "messages": messages,
-        })
+        p = prompt.invoke(
+            {
+                "current_day": curr_day,
+                "current_time": curr_time,
+                "current_date": curr_date,
+                "memories": memories,
+                "messages": messages,
+            }
+        )
 
         res = self.llm.with_structured_output(ChatResponse).invoke(p)
-        print(f'Initiating conversation with {user_name}; Message: {res.message}')
+        print(f"Initiating conversation with {user_name}; Message: {res.message}")
 
         if res.message is not None:
             add_message_to_queue(user_id, "telegram", channel_id, res.message)

@@ -13,11 +13,11 @@ cortex = Cortex()
 
 
 def add_message_to_queue(
-        user_id: str,
-        channel_type: str,
-        channel_id: str,
-        message: str,
-        timestamp: datetime = None
+    user_id: str,
+    channel_type: str,
+    channel_id: str,
+    message: str,
+    timestamp: datetime = None,
 ):
     payload = {
         "user_id": user_id,
@@ -31,7 +31,7 @@ def add_message_to_queue(
 
 
 async def handle_telegram_message(data):
-    user_details = data.get('message', {}).get('from')
+    user_details = data.get("message", {}).get("from")
     user_details["user_channel"] = "Telegram"
 
     user_id = str(user_details.get("id"))
@@ -50,20 +50,25 @@ async def handle_telegram_message(data):
         add_message_to_queue(user_id, "telegram", chat_id, reply_text)
 
 
-async def process_text_message(user_name: str, user_id: str, text: str, user_channel: str = "Telegram") -> str:
+async def process_text_message(
+    user_name: str, user_id: str, text: str, user_channel: str = "Telegram"
+) -> str:
     cortex.add_user_message(user_id, user_name, text)
-    new_state = converse.invoke({
-        "messages": cortex.get_messages(user_id),
-        "user_id": user_id, "user_name": user_name,
-        "user_channel": user_channel
-    })
+    new_state = converse.invoke(
+        {
+            "messages": cortex.get_messages(user_id),
+            "user_id": user_id,
+            "user_name": user_name,
+            "user_channel": user_channel,
+        }
+    )
     resp = new_state["messages"][-1]
 
     print(f"resp: {resp}")
     if not isinstance(resp, AIMessage):
         resp = AIMessage(content="I wont be able to respond now, talk later?")
 
-    cortex.add_agent_message(user_id, user_name, resp.content)
+    cortex.add_agent_message(user_id, user_name, resp.content, True)
 
     return resp.content
 
@@ -77,12 +82,16 @@ async def process_image_message(data: dict, prompt: str = None) -> str:
     if image_bytes:
         if not text:
             text = "Analyze and describe this image."
-        return await gemini_service.generate_content_with_image([prompt, text], image_bytes)
+        return await gemini_service.generate_content_with_image(
+            [prompt, text], image_bytes
+        )
     else:
         return "Sorry, I couldn't retrieve the image from Telegram."
 
 
-async def process_image_url_message(text: str, image_url: str, prompt: str = None) -> str:
+async def process_image_url_message(
+    text: str, image_url: str, prompt: str = None
+) -> str:
     if not text:
         text = "Analyze and describe this image."
     return await gemini_service.generate_content_from_url([prompt, text], image_url)

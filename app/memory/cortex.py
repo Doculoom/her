@@ -32,10 +32,10 @@ class Cortex:
             },
         )
 
-        if dump:
-            threading.Thread(
-                target=self.schedule_memory_dump, args=(user_id, user_name), daemon=True
-            ).start()
+        # if dump:
+        #     threading.Thread(
+        #         target=self.schedule_memory_dump, args=(user_id, user_name), daemon=True
+        #     ).start()
 
     @staticmethod
     def get_messages(user_id, last_n=settings.MAX_MESSAGES_PER_USER):
@@ -49,9 +49,7 @@ class Cortex:
         res = user_service.get_unflushed_chat_messages(user_id)
         messages = [item[1] for item in res]
 
-        old_memories_text = agent_registry.get("vault").retrieve_memories_text(
-            user_id, ["id", "text"]
-        )
+        old_memories_text = agent_registry.get("vault").retrieve_memories_list(user_id)
         new_memories = agent_registry.get("summary").generate_memory(
             user_name, messages
         )
@@ -68,7 +66,7 @@ class Cortex:
             old_memories_text, new_memories_text
         )
 
-        print(f"updated_memories: {updated_m.updated_memories}")
+        print(f"\n\n updated_memories: {updated_m.updated_memories}")
 
         for m in updated_m.updated_memories:
             if m.memory_id or m.memory_id != "None":

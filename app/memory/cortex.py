@@ -56,6 +56,8 @@ class Cortex:
             user_name, messages
         )
 
+        print(f"old_memories_text: {old_memories_text}")
+
         new_memories_text = ""
 
         for i, m in enumerate(new_memories.memories):
@@ -65,6 +67,8 @@ class Cortex:
         updated_m = agent_registry.get("summary").update_memories(
             old_memories_text, new_memories_text
         )
+
+        print(f"updated_memories: {updated_m.updated_memories}")
 
         for m in updated_m.updated_memories:
             if m.memory_id or m.memory_id != "None":

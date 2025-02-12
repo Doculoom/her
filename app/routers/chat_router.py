@@ -19,7 +19,8 @@ seen_channels = set()
 @router.post("/telegram/webhook", dependencies=[Depends(verify_telegram_secret_token)])
 async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     data = await request.json()
-    details = data.get('message', {}).get('from')
+    print(data)
+    details = data.get("message", {}).get("from")
     user_id = str(details.get("id"))
     user_name = details.get("first_name")
 
@@ -32,6 +33,10 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
             background_tasks.add_task(store_user_channel, user_name, user_id, chat_id)
             seen_channels.add(key)
 
+        if "entities" in data["message"]:
+            if data["message"].get("text") == "/start":
+                return {"ok": True}
+
         background_tasks.add_task(handle_telegram_message, data)
 
     return {"ok": True}
@@ -42,10 +47,17 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
 async def add_to_queue(request: Request):
     try:
         task_data = await request.json()
-        if not all(key in task_data for key in ["user_id", "channel_type", "channel_id", "text"]):
+        if not all(
+            key in task_data
+            for key in ["user_id", "channel_type", "channel_id", "text"]
+        ):
             raise HTTPException(status_code=400, detail="Bad request")
 
-        lock_key = (task_data["user_id"], task_data["channel_type"].lower(), task_data["channel_id"])
+        lock_key = (
+            task_data["user_id"],
+            task_data["channel_type"].lower(),
+            task_data["channel_id"],
+        )
 
         if lock_key not in locks:
             locks[lock_key] = asyncio.Lock()
@@ -54,7 +66,9 @@ async def add_to_queue(request: Request):
         async with lock:
             try:
                 if task_data["channel_type"].lower() == "telegram":
-                    send_telegram_message(int(task_data["channel_id"]), task_data["text"])
+                    send_telegram_message(
+                        int(task_data["channel_id"]), task_data["text"]
+                    )
             except Exception as e:
                 print(f"Error occurred: {e}")
                 raise HTTPException(status_code=500, detail=e)
@@ -88,7 +102,9 @@ async def chat(background_tasks: BackgroundTasks):
         user_name = user.get("user_name")
         user_id = user.get("user_id")
         channel_id = user.get("channel_id")
-        background_tasks.add_task(agent_registry.get("chat").act, user_name, user_id, channel_id)
+        background_tasks.add_task(
+            agent_registry.get("chat").act, user_name, user_id, channel_id
+        )
     return {"ok": True}
 
 
@@ -120,7 +136,7 @@ async def test_broadcast(request: Request):
             "user_id": user["user_id"],
             "channel_type": user["channel_type"],
             "channel_id": user["channel_id"],
-            "text": data.get('text').format(user["user_name"])
+            "text": data.get("text").format(user["user_name"]),
         }
         add_to_cloud_tasks(payload=payload)
 

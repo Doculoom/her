@@ -17,7 +17,8 @@ class HerState(TypedDict):
 class HerResponse(BaseModel):
     memories_needed: bool = Field(
         description="""Set this field as true if you think you need to fetch more context from the vault
-        to respond to the user; If you are able to answer the question set it to false""")
+        to respond to the user; If you are able to answer the question set it to false"""
+    )
     context: Optional[str] = Field(
         description="""Pass all relevant information needed for the next agent.
         If it is memory agent you should pass a text that will be converted into an embedding and a 
@@ -33,5 +34,7 @@ class HerResponse(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    message: Optional[str] = Field(description="The message if you want to initiate the chat", default=None)
-    user_id: Optional[str] = Field(description="The user_id for the user who you want to send the message", default=None)
+    message: str = Field(description="The message if you want to initiate the chat")
+    user_id: str = Field(
+        description="The user_id for the user who you want to send the message"
+    )

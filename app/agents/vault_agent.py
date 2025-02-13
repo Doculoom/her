@@ -101,7 +101,7 @@ class VaultAgent(BaseAgent):
         memories = defaultdict(str)
 
         for item in data:
-            memories[item["user_id"]] += item["text"]
+            memories[item["user_id"]] += item["text"] + " "
 
         res = []
         for memory in memories:

@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Annotated
+from zoneinfo import ZoneInfo
 
 from fastapi import Request, Header, HTTPException
 
@@ -9,7 +10,8 @@ from app.core.config import settings
 
 
 def get_current_date_time_info():
-    now = datetime.now()
+    tz = ZoneInfo("America/Los_Angeles")
+    now = datetime.now(tz)
     date_str = f"{now.day} {now.strftime('%B')}, {now.year}"
     day_of_week = now.strftime("%A")
 
@@ -77,7 +79,9 @@ async def verify_telegram_secret_token(
 ):
     token = settings.TELEGRAM_BOT_TOKEN.split(":")[0]
     if x_telegram_bot_api_secret_token != token:
-        print(f"Forbidden: Invalid secret token. Got: {x_telegram_bot_api_secret_token}")
+        print(
+            f"Forbidden: Invalid secret token. Got: {x_telegram_bot_api_secret_token}"
+        )
         raise HTTPException(status_code=403, detail="Forbidden")
 
 

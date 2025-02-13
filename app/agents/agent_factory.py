@@ -18,12 +18,18 @@ agent_registry: Dict[str, BaseAgent | VaultAgent | HerAgent | SummaryAgent] = {
 
 def vault_node(state: HerState):
     res = agent_registry.get("vault").act(state)
-    state["messages"].append(AIMessage(content=res.response, name="agent"))
+    if not res:
+        return state
+
+    if res.response:
+        state["messages"].append(AIMessage(content=res.response, name="agent"))
     return state
 
 
 def her_node(state: HerState):
     res: HerResponse = agent_registry.get("her").act(state)
+    if not res:
+        return state
 
     if res.memories_needed:
         state["next_node"] = "vault"

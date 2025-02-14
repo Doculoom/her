@@ -19,41 +19,48 @@ class FirestoreUserService(FirestoreBaseService):
         return [doc.to_dict() for doc in query]
 
     def add_chat_message(self, user_id: str, message: Dict[str, Any]) -> str:
-        message.update({
-            "timestamp": datetime.datetime.utcnow(),
-            "flushed": False,
-        })
+        message.update(
+            {
+                "timestamp": datetime.datetime.utcnow(),
+                "flushed": False,
+            }
+        )
 
-        doc_ref = self.chat_collection.document(user_id).collection("messages").document()
+        doc_ref = (
+            self.chat_collection.document(user_id).collection("messages").document()
+        )
         doc_ref.set(message)
         return doc_ref.id
 
     def get_chat_messages(self, user_id: str, limit: int) -> List[str]:
         messages_ref = self.chat_collection.document(user_id).collection("messages")
-        query = (
-            messages_ref
-            .order_by("timestamp", direction=firestore.Query.ASCENDING)
-            .limit(limit)
-        )
+        query = messages_ref.order_by(
+            "timestamp", direction=firestore.Query.DESCENDING
+        ).limit(limit)
         messages = []
         for doc in query.stream():
             doc = doc.to_dict()
-            message = generate_chat_message(doc["sender"], doc["name"], doc["content"], doc["timestamp"])
+            message = generate_chat_message(
+                doc["sender"], doc["name"], doc["content"], doc["timestamp"]
+            )
             messages.append(message)
 
         return messages
 
-    def get_unflushed_chat_messages(self, user_id: str, limit: int = 200) -> List[Tuple[str, BaseMessage]]:
+    def get_unflushed_chat_messages(
+        self, user_id: str, limit: int = 200
+    ) -> List[Tuple[str, BaseMessage]]:
         messages_ref = self.chat_collection.document(user_id).collection("messages")
         query = (
-            messages_ref
-            .where(filter=FieldFilter("flushed", "==", False))
+            messages_ref.where(filter=FieldFilter("flushed", "==", False))
             .order_by("timestamp", direction=firestore.Query.ASCENDING)
             .limit(limit)
         )
 
-        return [(doc.id, self._convert_to_langchain_message(doc.to_dict()))
-                for doc in query.stream()]
+        return [
+            (doc.id, self._convert_to_langchain_message(doc.to_dict()))
+            for doc in query.stream()
+        ]
 
     def mark_messages_as_flushed(self, user_id: str, message_ids: List[str]) -> None:
         if not message_ids:

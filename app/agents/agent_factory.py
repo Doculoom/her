@@ -1,23 +1,12 @@
-from typing import Dict
 from langchain_core.messages import AIMessage
 
-from app.agents.base_agent import BaseAgent
-from app.agents.chat_agent import ChatAgent
 from app.agents.her_agent import HerAgent
-from app.agents.summary_agent import SummaryAgent
 from app.agents.vault_agent import VaultAgent
 from app.models.agent_models import HerState, HerResponse
 
-agent_registry: Dict[str, BaseAgent | VaultAgent | HerAgent | SummaryAgent] = {
-    "her": HerAgent(),
-    "vault": VaultAgent(),
-    "summary": SummaryAgent(),
-    "chat": ChatAgent(),
-}
-
 
 def vault_node(state: HerState):
-    res = agent_registry.get("vault").act(state)
+    res = VaultAgent().act(state)
     if not res:
         return state
 
@@ -27,7 +16,7 @@ def vault_node(state: HerState):
 
 
 def her_node(state: HerState):
-    res: HerResponse = agent_registry.get("her").act(state)
+    res: HerResponse = HerAgent().act(state)
     if not res:
         return state
 

@@ -1,2 +1,0 @@
-locks = {}
-scheduled_tasks = {}

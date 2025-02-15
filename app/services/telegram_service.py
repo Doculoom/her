@@ -5,10 +5,7 @@ from app.core.config import settings
 
 def send_telegram_message(chat_id: int, text: str) -> None:
     url = f"{settings.BASE_TELEGRAM_URL}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": text
-    }
+    payload = {"chat_id": int(chat_id), "text": text}
     response = requests.post(url, json=payload)
     if response.status_code != 200:
         print(f"Error sending message: {response.text}")

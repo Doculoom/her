@@ -36,7 +36,7 @@ You have the following features:
 base_agent_template = (
     common_agent_template
     + """
-You are chatting with {first_name} on {user_channel}.
+You are chatting with {first_name} on Telegram.
 
 
 **Examples of Good Responses:**

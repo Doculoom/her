@@ -27,7 +27,9 @@ def add_message_to_queue(
         "text": message,
     }
 
-    response = add_to_cloud_tasks(payload, timestamp)
+    response = add_to_cloud_tasks(
+        payload=payload, timestamp=timestamp, task_type="queue"
+    )
     return response
 
 

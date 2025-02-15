@@ -9,7 +9,10 @@ from app.core.config import settings
 
 
 def add_to_cloud_tasks(
-    payload: dict, timestamp: Optional[datetime] = None, task_type: str = "queue"
+    payload: dict,
+    task_type: str,
+    timestamp: Optional[datetime] = None,
+    task_id: str = None,
 ):
     client = tasks_v2.CloudTasksClient()
     project, location, queue = (
@@ -34,6 +37,10 @@ def add_to_cloud_tasks(
         }
     }
 
+    if task_id:
+        task_name = client.task_path(project, location, queue, task_id)
+        task["name"] = task_name
+
     if payload is not None:
         if isinstance(payload, dict):
             payload = json.dumps(payload)
@@ -52,15 +59,23 @@ def add_to_cloud_tasks(
 
 
 def reschedule_cloud_task(
-    existing_task_name: str,
+    task_id: str,
     payload: dict,
     task_type: str,
     timestamp: Optional[datetime.datetime] = None,
 ):
     client = tasks_v2.CloudTasksClient()
+    project, location, queue = (
+        settings.GCP_PROJECT_ID,
+        settings.GCP_LOCATION,
+        settings.CLOUD_TASKS_QUEUE,
+    )
+    task_name = client.task_path(project, location, queue, task_id)
     try:
-        client.delete_task(name=existing_task_name)
+        client.delete_task(name=task_name)
     except Exception as e:
-        print(f"Error deleting task {existing_task_name}: {e}")
+        print(f"Error deleting task {task_name}: {e}")
 
-    return add_to_cloud_tasks(payload, timestamp, task_type)
+    return add_to_cloud_tasks(
+        payload=payload, timestamp=timestamp, task_type=task_type, task_id=task_id
+    )

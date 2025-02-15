@@ -98,6 +98,7 @@ async def test_schedule(request: Request):
     add_to_cloud_tasks(
         payload=payload,
         timestamp=future_time,
+        task_type="queue",
     )
 
     return {"ok": True}
@@ -115,6 +116,6 @@ async def test_broadcast(request: Request):
             "channel_id": user["channel_id"],
             "text": data.get("text").format(user["user_name"]),
         }
-        add_to_cloud_tasks(payload=payload)
+        add_to_cloud_tasks(payload=payload, task_type="queue")
 
     return {"ok": True}

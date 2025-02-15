@@ -10,8 +10,8 @@ from app.core.config import settings
 
 def add_to_cloud_tasks(
     payload: dict,
+    task_type: str,
     timestamp: Optional[datetime] = None,
-    task_type: str = "queue",
     task_id: str = None,
 ):
     client = tasks_v2.CloudTasksClient()

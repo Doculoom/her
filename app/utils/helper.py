@@ -99,13 +99,13 @@ async def schedule_memory_dump(chat_id: int, user_id: str, user_name: str):
     print(f"Scheduling memory dump at {scheduled_time.time()}")
 
     payload = {"user_id": user_id, "user_name": user_name}
-    task_name = f"summarize_chat_for_{user_id}_on_{chat_id}"
+    task_id = f"summarize_chat_for_{user_id}_on_{chat_id}"
 
     reschedule_cloud_task(
-        task_name,
-        payload,
+        payload=payload,
         timestamp=scheduled_time,
         task_type="summarize",
+        task_id=task_id,
     )
 
 
@@ -114,11 +114,11 @@ async def schedule_user_response(chat_id: int, user_id: str, user_name: str):
     flush_delay = datetime.timedelta(seconds=delay)
     scheduled_time = datetime.datetime.utcnow() + flush_delay
     payload = {"chat_id": chat_id, "user_id": user_id, "user_name": user_name}
-    task_name = f"respond_to_{user_id}_{chat_id}"
+    task_id = f"respond_to_{user_id}_{chat_id}"
 
     reschedule_cloud_task(
-        task_name,
-        payload,
+        payload=payload,
         timestamp=scheduled_time,
         task_type="respond",
+        task_id=task_id,
     )

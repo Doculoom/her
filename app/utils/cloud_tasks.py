@@ -9,18 +9,21 @@ from app.core.config import settings
 
 
 def add_to_cloud_tasks(
-    payload: dict,
-    timestamp: Optional[datetime] = None,
-    task_type: str = "queue"
+    payload: dict, timestamp: Optional[datetime] = None, task_type: str = "queue"
 ):
     client = tasks_v2.CloudTasksClient()
-    project, location, queue = settings.GCP_PROJECT_ID, settings.GCP_LOCATION, settings.CLOUD_TASKS_QUEUE
+    project, location, queue = (
+        settings.GCP_PROJECT_ID,
+        settings.GCP_LOCATION,
+        settings.CLOUD_TASKS_QUEUE,
+    )
     parent = client.queue_path(project, location, queue)
-
     if task_type == "queue":
         endpoint_url = settings.HER_API_URL + "api/v1/queue"
     elif task_type == "summarize":
         endpoint_url = settings.HER_API_URL + "api/v1/summarize"
+    elif task_type == "respond":
+        endpoint_url = settings.HER_API_URL + "api/v1/respond"
     else:
         raise ValueError("Unsupported task type")
 
@@ -51,8 +54,8 @@ def add_to_cloud_tasks(
 def reschedule_cloud_task(
     existing_task_name: str,
     payload: dict,
+    task_type: str,
     timestamp: Optional[datetime.datetime] = None,
-    task_type: str = "summarize"
 ):
     client = tasks_v2.CloudTasksClient()
     try:

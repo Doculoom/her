@@ -1,4 +1,5 @@
-from datetime import datetime
+import datetime
+import random
 from typing import Annotated
 from zoneinfo import ZoneInfo
 
@@ -7,11 +8,12 @@ from fastapi import Request, Header, HTTPException
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 from app.core.config import settings
+from app.utils.cloud_tasks import reschedule_cloud_task
 
 
 def get_current_date_time_info():
     tz = ZoneInfo("America/Los_Angeles")
-    now = datetime.now(tz)
+    now = datetime.datetime.now(tz)
     date_str = f"{now.day} {now.strftime('%B')}, {now.year}"
     day_of_week = now.strftime("%A")
 
@@ -89,3 +91,34 @@ def generate_chat_message(sender, user_name, text, ts):
     sender = "you" if sender == "agent" else user_name
     message = f"[{format_datetime_with_nanoseconds(ts)}] {sender}: {text}"
     return message
+
+
+async def schedule_memory_dump(chat_id: int, user_id: str, user_name: str):
+    flush_delay = datetime.timedelta(seconds=settings.MEMORY_DUMP_SECONDS)
+    scheduled_time = datetime.datetime.utcnow() + flush_delay
+    print(f"Scheduling memory dump at {scheduled_time.time()}")
+
+    payload = {"user_id": user_id, "user_name": user_name}
+    task_name = f"summarize_chat_for_{user_id}_on_{chat_id}"
+
+    reschedule_cloud_task(
+        task_name,
+        payload,
+        timestamp=scheduled_time,
+        task_type="summarize",
+    )
+
+
+async def schedule_user_response(chat_id: int, user_id: str, user_name: str):
+    delay = random.uniform(1.5, 2.5)
+    flush_delay = datetime.timedelta(seconds=delay)
+    scheduled_time = datetime.datetime.utcnow() + flush_delay
+    payload = {"chat_id": chat_id, "user_id": user_id, "user_name": user_name}
+    task_name = f"respond_to_{user_id}_{chat_id}"
+
+    reschedule_cloud_task(
+        task_name,
+        payload,
+        timestamp=scheduled_time,
+        task_type="respond",
+    )

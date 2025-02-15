@@ -25,7 +25,6 @@ class VaultAgent(BaseAgent):
         p = prompt.invoke(
             {
                 "messages": conv,
-                "user_channel": state["user_channel"],
                 "memories": memories,
                 "current_day": current_day,
                 "current_time": current_time,
@@ -35,6 +34,7 @@ class VaultAgent(BaseAgent):
         )
 
         res = self.llm.with_structured_output(HerResponse).invoke(p)
+        print(f"Vault res: {res}")
         return res
 
     @staticmethod

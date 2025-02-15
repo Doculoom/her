@@ -1,17 +1,16 @@
 from langchain_core.prompts import PromptTemplate
 
 from app.agents.base_agent import BaseAgent
+from app.agents.vault_agent import VaultAgent
 from app.core.prompt_templates import chat_agent_template
 from app.models.agent_models import ChatResponse
+from app.services.message_handler import finish_sending_message
 from app.utils.helper import get_current_date_time_info
+from app.memory.cortex import Cortex
 
 
 class ChatAgent(BaseAgent):
-    def act(self, user_name: str, user_id: str, channel_id: str):
-        from app.memory.cortex import Cortex
-        from app.agents.agent_factory import agent_registry
-        from app.services.message_handler import add_message_to_queue
-
+    async def act(self, user_name: str, user_id: str, chat_id: str):
         cortex = Cortex()
 
         (
@@ -19,8 +18,8 @@ class ChatAgent(BaseAgent):
             curr_day,
             curr_time,
         ) = get_current_date_time_info()
-        memories = agent_registry.get("vault").retrieve_memories_text(user_id)
-        messages = cortex.get_messages(channel_id, 10)
+        memories = VaultAgent().retrieve_memories_text(user_id)
+        messages = cortex.get_messages(chat_id, 10)
         print(f"user_name: {user_name}, memories: {memories}")
 
         prompt = PromptTemplate.from_template(chat_agent_template)
@@ -38,5 +37,6 @@ class ChatAgent(BaseAgent):
 
         if res and res.message is not None:
             print(f"Initiating conversation with {user_name}; Message: {res.message}")
-            add_message_to_queue(user_id, "telegram", channel_id, res.message)
-            cortex.add_agent_message(user_id, user_name, res.message)
+            await finish_sending_message(
+                chat_id, user_id, user_name, res.message, False
+            )

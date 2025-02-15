@@ -33,19 +33,21 @@ def get_current_date_time_info():
     return date_str, day_of_week, time_str
 
 
-def format_datetime_with_nanoseconds(dt):
+def format_datetime_with_nanoseconds(dt: datetime) -> str:
     if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
-        pass
+        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
 
-    month_str = dt.strftime("%b")
-    day = dt.day
+    dt_pst = dt.astimezone(ZoneInfo("America/Los_Angeles"))
+
+    month_str = dt_pst.strftime("%b")
+    day = dt_pst.day
     if 4 <= day <= 20 or 24 <= day <= 30:
         suffix = "th"
     else:
         suffix = ["st", "nd", "rd"][day % 10 - 1]
-    day_str = str(day) + suffix
+    day_str = f"{day}{suffix}"
 
-    hour = dt.hour
+    hour = dt_pst.hour
     if hour == 0:
         hour_12 = 12
         am_pm = "am"
@@ -59,7 +61,7 @@ def format_datetime_with_nanoseconds(dt):
         hour_12 = hour - 12
         am_pm = "pm"
 
-    time_str = f"{hour_12}:{dt.minute:02}{am_pm}"
+    time_str = f"{hour_12}:{dt_pst.minute:02}{am_pm}"
     return f"{month_str} {day_str}, {time_str}"
 
 
@@ -110,9 +112,12 @@ async def schedule_memory_dump(chat_id: int, user_id: str, user_name: str):
 
 
 async def schedule_user_response(chat_id: int, user_id: str, user_name: str):
-    delay = random.uniform(1.5, 2.5)
+    delay = random.uniform(3, 5)
     flush_delay = datetime.timedelta(seconds=delay)
     scheduled_time = datetime.datetime.utcnow() + flush_delay
+    print(
+        f"[{datetime.datetime.utcnow()}] Scheduling response at {scheduled_time.time()}"
+    )
     payload = {"chat_id": chat_id, "user_id": user_id, "user_name": user_name}
     task_id = f"respond_to_{user_id}_{chat_id}"
 

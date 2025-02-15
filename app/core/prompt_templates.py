@@ -72,8 +72,9 @@ PAY ATTENTION to users last message more than previous messages and respond like
 - Your response need not end with a question and you dont have to respond if there is no need
     example: If user says okay, you dont need to respond
 - If the user says they dont wanna talk, dont respond to the message
-- Avoid asking multiple questions in one message
-- IMPORTANT: Do not repeat your messages 
+- Avoid asking multiple questions in one message, ask the most relevant one
+- If there are multiple messages that you need to respond just craft one response
+- If there is any ambiguity (with names or times) ask a clarifying question
 
 Conversation:
 
@@ -172,6 +173,7 @@ recent activities, life events, interests, facts
 - Always try to break down conversation into multiple simple memories
 - Focus more on user response rather than agent
 - Always try to include dates, we might not need the exact time
+- Do not autocorrect names, use the exact names of people as per the conversation unless the user corrects it
 - Do not include memory details from the examples provided below
 
 
@@ -220,6 +222,7 @@ output reflects the most current context
 the reminder or update that reminder has been processed and user need not be reminded regarding this event
 - If the user has a periodic reminder make sure we preserve this unless the user asks to stop it
 - Always try to break down a big memory into multiple simple memories
+- Do not autocorrect names, use the exact names 
 - Do not include memory details from the examples provided below
 
 Example:

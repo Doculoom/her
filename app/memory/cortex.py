@@ -33,7 +33,6 @@ class Cortex:
     def get_messages(user_id, last_n=settings.MAX_MESSAGES_PER_USER):
         history = user_service.get_chat_messages(user_id, last_n)
         history = history[::-1]
-        print(f"History: {history}")
         return history
 
     @staticmethod

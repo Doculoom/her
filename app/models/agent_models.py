@@ -38,3 +38,6 @@ class ChatResponse(BaseModel):
     user_id: str = Field(
         description="The user_id for the user who you want to send the message"
     )
+    initiate_chat: bool = Field(
+        description="Boolean indicating if the agent wants to initiated the chat with the user"
+    )

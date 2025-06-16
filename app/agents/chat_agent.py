@@ -35,7 +35,7 @@ class ChatAgent(BaseAgent):
 
         res = self.llm.with_structured_output(ChatResponse).invoke(p)
 
-        if res and res.message is not None:
+        if res and res.initiate_chat and res.message is not None:
             print(f"Initiating conversation with {user_name}; Message: {res.message}")
             await finish_sending_message(
                 chat_id, user_id, user_name, res.message, False

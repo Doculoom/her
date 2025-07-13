@@ -1,3 +1,5 @@
+import logging
+
 from langchain_core.prompts import PromptTemplate
 
 
@@ -9,6 +11,7 @@ from app.utils.helper import get_current_date_time_info, messages_to_string
 
 class HerAgent(BaseAgent):
     def act(self, state: HerState):
+        logging.info("Her agent thinking..")
         conv = messages_to_string(state["user_name"], state["messages"])
         (
             curr_date,

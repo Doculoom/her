@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from typing import List
 from urllib.parse import urlencode
@@ -16,9 +17,9 @@ from app.utils.helper import messages_to_string, get_current_date_time_info
 
 class VaultAgent(BaseAgent):
     def act(self, state: HerState) -> HerResponse:
+        logging.info("Vault agent thinking..")
         conv = messages_to_string(state["user_name"], state["messages"])
         memories = self.retrieve_memories(state)
-        print(f"memories: {memories}")
         current_date, current_day, current_time = get_current_date_time_info()
 
         prompt = PromptTemplate.from_template(vault_agent_template)

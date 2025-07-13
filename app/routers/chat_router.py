@@ -1,8 +1,12 @@
 from datetime import timedelta
 
+from langchain_core.prompts import PromptTemplate
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Depends
 
 from app.agents.chat_agent import ChatAgent
+from app.core.llm import get_langchain_model
+from app.core.prompt_templates import her_agent_template
+from app.models.agent_models import HerResponse
 from app.services.firestore.users_service import FirestoreUserService
 from app.services.message_handler import *
 from app.services.vault_service import store_user_channel
@@ -119,3 +123,24 @@ async def test_broadcast(request: Request):
         add_to_cloud_tasks(payload=payload, task_type="queue")
 
     return {"ok": True}
+
+
+@router.post("/test/chat")
+async def test_chat(request: Request):
+    data = await request.json()
+    now = datetime.now()
+    prompt = PromptTemplate.from_template(her_agent_template)
+    p = prompt.invoke(
+        {
+            "messages": f"{data['role']}: {data['message']}",
+            "current_day": now.date().day,
+            "current_time": now.time(),
+            "current_date": now.date(),
+            "first_name": "Vinay",
+        }
+    )
+
+    llm = get_langchain_model()
+    res = llm.with_structured_output(HerResponse).invoke(p)
+
+    return {"ok": True, "response": res.response}

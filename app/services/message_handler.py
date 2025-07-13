@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from langchain_core.messages import AIMessage
@@ -63,8 +64,8 @@ async def respond_to_user(chat_id: int, user_id: str, user_name: str):
 
     resp = state["messages"][-1]
     if resp is None or not isinstance(resp, AIMessage):
-        print(f"ERROR: Empty response from the model")
-        resp = AIMessage(content="I wont be able to respond now, talk later?")
+        logging.warning(f" Empty response from the model")
+        return
 
     await finish_sending_message(chat_id, user_id, user_name, resp.content, True)
 

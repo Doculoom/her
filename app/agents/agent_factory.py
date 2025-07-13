@@ -17,7 +17,8 @@ def vault_node(state: HerState):
         state["next_node"] = "search"
     else:
         state["next_node"] = "end"
-        state["messages"].append(AIMessage(content=res.response, name="agent"))
+        if res.response:
+            state["messages"].append(AIMessage(content=res.response, name="agent"))
 
     return state
 
@@ -37,7 +38,8 @@ def her_node(state: HerState):
         state["next_node"] = "search"
     else:
         state["next_node"] = "end"
-        state["messages"].append(AIMessage(content=res.response, name="agent"))
+        if res.response:
+            state["messages"].append(AIMessage(content=res.response, name="agent"))
     return state
 
 

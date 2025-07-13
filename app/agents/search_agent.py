@@ -54,12 +54,16 @@ class SearchAgent:
             last_user_msg=last_msg,
         )
 
-        resp = self.client.models.generate_content(
-            model=self.model_id,
-            contents=prompt,
-            config=self.config,
-        )
-        answer = resp.candidates[0].content.parts[0].text
+        try:
+            resp = self.client.models.generate_content(
+                model=self.model_id,
+                contents=prompt,
+                config=self.config,
+            )
+            answer = resp.candidates[0].content.parts[0].text
+        except Exception as e:
+            answer = None
+            logging.error(e)
 
         state["messages"].append(AIMessage(content=answer, name="agent"))
         state["next_node"] = "end"

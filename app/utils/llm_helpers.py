@@ -27,7 +27,7 @@ Respond ONLY with a valid JSON object matching this schema:
 - Do not include any extra explanation, greeting, or formatting—return ONLY the JSON.
 - If you are unable to answer, still respond with all required fields using null or default values.
 
-Note: If recent information is needed, use search to provide an accurate answer
+Note: If up-to-date info like news or stock prices is needed, feel free to use Google Search.
 """
 
 

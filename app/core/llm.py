@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.utils.llm_helpers import build_prompt_with_output_instructions
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class GroundedLLMWrapper:
@@ -19,16 +20,23 @@ class GroundedLLMWrapper:
             tools=[Tool(google_search=GoogleSearch())],
             response_modalities=["TEXT"],
         )
+        logger.debug("Tool config: %s", self.config)
 
     def invoke(self, prompt: str) -> Any:
+        logger.debug("Prompt: %s", prompt[:500])
         try:
-            return self.client.models.generate_content(
+            resp = self.client.models.generate_content(
                 model=self.model_id,
                 contents=prompt,
                 config=self.config,
             )
+            logger.debug(
+                "Grounding meta: %s",
+                getattr(resp.candidates[0], "grounding_metadata", None),
+            )
+            return resp
         except Exception as e:
-            logger.error(f"invoke error: {e}")
+            logger.exception("invoke error")
             raise
 
     def with_structured_output(self, pydantic_model):
@@ -48,23 +56,25 @@ class GroundedLLMWrapper:
                 prompt_with_instr = build_prompt_with_output_instructions(
                     prompt, pydantic_model
                 )
+                logger.debug("Prompt with instructions: %s", prompt_with_instr[:500])
                 resp = self.outer.invoke(prompt_with_instr)
                 response_text = resp.candidates[0].content.parts[0].text
+                logger.debug("Raw response: %s", response_text)
 
                 try:
                     return pydantic_model.model_validate_json(response_text)
-                except Exception:
-                    pass
+                except Exception as e_json:
+                    logger.debug("JSON parse fail: %s", e_json)
                 try:
                     return pydantic_model.model_validate(response_text)
-                except Exception:
-                    pass
+                except Exception as e_dict:
+                    logger.debug("Model parse fail: %s", e_dict)
                 json_str = self._extract_json(response_text)
                 if json_str:
                     try:
                         return pydantic_model.model_validate_json(json_str)
-                    except Exception:
-                        pass
+                    except Exception as e_extract:
+                        logger.debug("Extracted JSON parse fail: %s", e_extract)
                 raise ValueError(
                     f"cannot parse response into {pydantic_model.__name__}: {response_text}"
                 )

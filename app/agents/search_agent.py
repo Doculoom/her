@@ -26,9 +26,10 @@ class SearchAgent:
         last_user_msg: str,
     ) -> str:
         head = (
-            f"You are chatting with {user_name} as a helpful friend. "
-            "Reply in a natural, friendly tone (1 – 3 short sentences). "
+            f"You are responding to a message as a friend"
+            "Reply in a natural, friendly tone, crisp message. "
             "Blend any facts you retrieve into the reply and do NOT mention you used a search tool."
+            "Make sure your response blends well with the latest users message"
         )
         return (
             f"{head}\n\n"

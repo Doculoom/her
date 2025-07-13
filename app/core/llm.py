@@ -10,4 +10,8 @@ ModelT: TypeAlias = ChatGoogleGenerativeAI
 
 @cache
 def get_langchain_model(model_name: str = settings.MODEL) -> ModelT:
-    return ChatGoogleGenerativeAI(model=model_name)
+    llm = ChatGoogleGenerativeAI(
+        model=model_name,
+        tools=["google_search_retrieval"],
+    )
+    return llm

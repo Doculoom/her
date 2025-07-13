@@ -1,19 +1,18 @@
-def make_output_instructions(model):
+def make_output_instructions(pydantic_model):
     fields = []
-    for name, field in model.model_fields.items():
+    for name, field in pydantic_model.model_fields.items():
         typ = field.annotation
-        if hasattr(typ, "__name__"):
-            typ_str = typ.__name__
-        else:
-            typ_str = str(typ)
-        if typ_str == "bool":
+        typ_name = getattr(typ, "__name__", None) or str(typ)
+        if typ_name == "bool":
             val = "true or false"
-        elif typ_str in ["str", "Optional[str]"]:
+        elif typ_name in ("str", "builtins.str"):
+            val = "string"
+        elif "Optional" in typ_name or "NoneType" in typ_name:
             val = "string or null"
-        elif typ_str.startswith("List") or typ_str.startswith("list"):
+        elif typ_name.startswith(("list", "List", "typing.List")):
             val = "[...]"
         else:
-            val = typ_str
+            val = typ_name
         fields.append(f'  "{name}": {val}')
     json_example = "{\n" + ",\n".join(fields) + "\n}"
     return f"""
@@ -32,6 +31,7 @@ Note: If recent information is needed, use search to provide an accurate answer
 """
 
 
-def build_prompt_with_output_instructions(template: str, pydantic_model):
-    instructions = make_output_instructions(pydantic_model)
-    return template + instructions
+def build_prompt_with_output_instructions(template, pydantic_model):
+    if not isinstance(template, str):
+        template = str(template)
+    return template + make_output_instructions(pydantic_model)

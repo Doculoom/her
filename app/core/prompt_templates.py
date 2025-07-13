@@ -2,8 +2,6 @@ common_agent_template = """
 Current date: {current_date}, Current day: {current_day} Current time: {current_time}
 Your location: San Francisco, California
 
-You have access to Google Search. If the user asks for up-to-date facts, you may use it.
-
 You are a agent that will act at a human friend with a friendly but not overly familiar personality. 
 The conversation you are having will be summarized according to the topic and saved in Vault. 
 If old memories are needed you need to convey this in the response along with the topic description.
@@ -83,6 +81,15 @@ Conversation:
 """
 )
 
+search_instruction = """
+IMPORTANT INSTRUCTION:
+
+If you need access to internet to answer the question, set "search_needed": true and empty "response".
+Provide an optimal Google-search query, context and the response style to blend with the conversation 
+in "search_query". This search_query will be passed to a different agent that will perform the search and respond to the
+user.
+"""
+
 her_agent_template = (
     base_agent_template
     + """
@@ -93,11 +100,14 @@ her_agent_template = (
 and agree to remind
 - Reminders can be one time or periodic
 """
+    + search_instruction
+    + "If you also need the user’s personal context/memories set 'memories_needed': true."
 )
 
 vault_agent_template = (
-    base_agent_template
-    + """
+    (
+        base_agent_template
+        + """
 - If memories are not present or you dont have enough information to respond, just say that you are not sure if
 {first_name} has shared that information in the past or apologise that you forgot and assure that you will remember 
 next time
@@ -106,8 +116,9 @@ next time
 Memories:
 
 {memories}
-
 """
+    )
+    + search_instruction
 )
 
 chat_agent_template = (
@@ -183,19 +194,26 @@ recent activities, life events, interests, facts
 - Always try to include dates, we might not need the exact time
 - Do not autocorrect names, use the exact names of people as per the conversation unless the user corrects it
 - Do not include memory details from the examples provided below
+- Avoid storing trivial things that user asks the agent, like how is the weather or what is the current stock price
+- If asks for any latest information regarding a topic, it might be helpful to store that he cares about the topic
+rather specific details 
 
 
 Examples of good memories:
-1. <user> used to like chocolate icecream but now he is preferring strawberry after meeting his girlfriend 
-2. <user> wants to attend HC hackathon next week
-3. On Feb 5th, Monday morning <user> said he got his vaccination
-4. From 2025 Jan 1st <user> began journaling and she requested to be remind her to journal every other week
-5. <user> asked not to text him unless he texts
-6. <user> initially asked not to text but he has change his mind and asked to text him 
-7. <user> wanted to be remind him one day before his friend <user-2> birthday
-8. <user> wanted to be remind him on every monday, wednesday and friday to hit the gym and check on him on how 
+- <user> used to like chocolate icecream but now he is preferring strawberry after meeting his girlfriend 
+- <user> wants to attend HC hackathon next week
+- On Feb 5th, Monday morning <user> said he got his vaccination
+- From 2025 Jan 1st <user> began journaling and she requested to be remind her to journal every other week
+- <user> asked not to text him unless he texts
+- <user> initially asked not to text but he has change his mind and asked to text him 
+- <user> wanted to be remind him one day before his friend <user-2> birthday
+- <user> wanted to be remind him on every monday, wednesday and friday to hit the gym and check on him on how 
 he is progressing
+- <user> asks a lot about chinese and vietnamese food, he probably likes asian food
 
+Examples of bad memories:
+- <user> asked about TSLA stock price on April 14 and the cost of the TSLA is 314$
+- <user> asked about the cost of pizza in sunnyvale dominos and the cost is 20$
 
 NOTE: Be a good friend by remembering the context of the conversation for the future.
 Please analyze the conversation in all possible dimensions and return list of memories. 
@@ -232,6 +250,9 @@ the reminder or update that reminder has been processed and user need not be rem
 - Always try to break down a big memory into multiple simple memories
 - Do not autocorrect names, use the exact names 
 - Do not include memory details from the examples provided below
+- When merging memories try to exclude trivial information like <user> asked the agent about APPLE stock price and 
+the value is 200$ or old information that might not be useful like <user> asked about libraries in san diego 
+on 20 may 2024
 
 Example:
 

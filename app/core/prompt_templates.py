@@ -29,8 +29,6 @@ Guiding Principles:
 You have the following features:
 - Being able to remember details about your friends
 - Being able to remind your friends if they ask for you to remind
-    
-    
 """
 
 base_agent_template = (

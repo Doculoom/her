@@ -1,45 +1,61 @@
 import google.generativeai as genai
 import aiohttp
 from app.core.config import settings
+from google.generativeai.types import Tool, GenerationConfig
 
 
 class GeminiService:
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
         self.model = genai.GenerativeModel(settings.MODEL)
+        self.google_search_tool = Tool.from_dict({"google_search": {}})
 
-    def generate_content(self, content_parts: list, generation_config=None) -> str:
+    def generate_content(
+        self, content_parts: list, generation_config: GenerationConfig = None
+    ) -> str:
         try:
-            if generation_config and isinstance(generation_config, genai.types.GenerationConfig):
+            if generation_config and isinstance(generation_config, GenerationConfig):
                 response = self.model.generate_content(
-                    content_parts, generation_config=generation_config
+                    content_parts,
+                    generation_config=generation_config,
+                    tools=[self.google_search_tool],
                 )
             else:
-                response = self.model.generate_content(content_parts)
+                response = self.model.generate_content(
+                    content_parts,
+                    tools=[self.google_search_tool],
+                )
             return response.text
         except Exception as e:
             print(f"Error calling Gemini API: {e}")
             return "Sorry, I encountered an error while processing your request."
 
     async def generate_content_with_image(
-            self, content_parts: list, image_bytes: bytes, generation_config=None
+        self,
+        content_parts: list,
+        image_bytes: bytes,
+        generation_config: GenerationConfig = None,
     ) -> str:
         try:
             image_part = {"mime_type": "image/jpeg", "data": image_bytes}
             content_parts.append(image_part)
-            if generation_config and isinstance(generation_config, genai.types.GenerationConfig):
+            if generation_config and isinstance(generation_config, GenerationConfig):
                 response = self.model.generate_content(
-                    content_parts, generation_config=generation_config
+                    content_parts,
+                    generation_config=generation_config,
+                    tools=[self.google_search_tool],
                 )
             else:
-                response = self.model.generate_content(content_parts)
+                response = self.model.generate_content(
+                    content_parts, tools=[self.google_search_tool]
+                )
             return response.text
         except Exception as e:
             print(f"Error calling Gemini API: {e}")
             return "Sorry, I encountered an error while processing your request."
 
     async def generate_content_from_url(
-            self, content_parts: list, image_url: str, generation_config=None
+        self, content_parts: list, image_url: str, generation_config=None
     ) -> str:
         async with aiohttp.ClientSession() as session:
             async with session.get(image_url) as resp:

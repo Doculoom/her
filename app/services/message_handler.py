@@ -127,9 +127,9 @@ async def initiate_chat(state: ChatAgentState):
         return
 
     await finish_sending_message(
-        chat_id=state["chat_id"],
+        chat_id=state["user_channel"],
         user_id=state["user_id"],
-        user_name=state["user_channel"],
+        user_name=state["user_name"],
         resp=resp.content,
         dump=True,
     )

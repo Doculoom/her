@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime
+from typing import Dict
 
 from langchain_core.messages import AIMessage
 
 from app.memory.cortex import Cortex
+from app.models.agent_models import ChatAgentState
 from app.services.llm_services.gemini_service import gemini_service
 from app.services.telegram_service import get_file_from_telegram, send_telegram_message
 from app.utils.cloud_tasks import add_to_cloud_tasks
@@ -72,7 +74,7 @@ async def respond_to_user(chat_id: int, user_id: str, user_name: str):
 
 async def finish_sending_message(chat_id, user_id, user_name, resp, dump=False):
     try:
-        send_telegram_message(chat_id, resp)
+        send_telegram_message(int(chat_id), resp)
     except Exception as e:
         print(f"Unable to send the telegram message | error: {e}")
     else:
@@ -113,3 +115,21 @@ async def process_image_url_message(
     if not text:
         text = "Analyze and describe this image."
     return await gemini_service.generate_content_from_url([prompt, text], image_url)
+
+
+async def initiate_chat(state: ChatAgentState):
+    from app.workflows.chat_workflow import chat_workflow
+
+    state = await chat_workflow.ainvoke(state)
+    resp = state["messages"][-1]
+    if resp is None or not isinstance(resp, AIMessage):
+        logging.warning(f"Empty response from the model")
+        return
+
+    await finish_sending_message(
+        chat_id=state["chat_id"],
+        user_id=state["user_id"],
+        user_name=state["user_channel"],
+        resp=resp.content,
+        dump=True,
+    )

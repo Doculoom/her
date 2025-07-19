@@ -5,7 +5,7 @@ from google.genai import types
 from langchain.schema import AIMessage
 
 from app.core.config import settings
-from app.models.agent_models import HerState
+from app.models.agent_models import AgentState
 
 
 class SearchAgent:
@@ -26,15 +26,16 @@ class SearchAgent:
         last_user_msg: str,
     ) -> str:
         head = (
-            f"You are responding to a message in middle of a conversation, so no greetings"
+            f"You are responding to a message in middle of a conversation, so no greetings like Hey or hello"
             "when you respond \n"
-            "Reply in a natural, friendly tone, crisp message (1-3 sentences) like a friend"
+            "Reply in a natural, friendly tone, short crisp message just like how a friend would text"
             "Blend any facts you retrieve into the reply and do NOT mention you used a search tool."
             "Make sure your response blends well with the latest users message"
         )
         return (
             f"{head}\n\n"
-            f'Latest user message:\n"{last_user_msg}"\n\n'
+            f'Last message in the conversation:\n"{last_user_msg}"\n\n'
+            "Your response will be the next message \n"
             "Context and search guidance from the previous agent:\n"
             f"{context}\n\n"
             "Search query:\n"
@@ -42,7 +43,7 @@ class SearchAgent:
             "Reply to the user now."
         )
 
-    def act(self, state: HerState):
+    def act(self, state: AgentState):
         logging.info("Search agent thinking..")
         user_name = state["user_name"]
         search_query = state.get("search_query") or state["messages"][-1].content

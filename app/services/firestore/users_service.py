@@ -32,6 +32,42 @@ class FirestoreUserService(FirestoreBaseService):
         doc_ref.set(message)
         return doc_ref.id
 
+    def get_user_activity_and_last_agent_check(
+        self,
+        user_ids: List[str],
+        limit: int,
+    ) -> dict:
+        result = {}
+        for user_id in user_ids:
+            messages_ref = self.chat_collection.document(user_id).collection("messages")
+            query = messages_ref.order_by(
+                "timestamp", direction=firestore.Query.DESCENDING
+            ).limit(limit)
+
+            messages = []
+            consecutive_agent_count = 0
+
+            for idx, snap in enumerate(query.stream()):
+                doc = snap.to_dict()
+                messages.append(
+                    generate_chat_message(
+                        doc["sender"],
+                        doc["name"],
+                        doc["content"],
+                        doc["timestamp"],
+                    )
+                )
+
+                if idx == consecutive_agent_count and doc["sender"] == "agent":
+                    consecutive_agent_count += 1
+
+            result[user_id] = {
+                "agent_count": consecutive_agent_count,
+                "history": messages[::-1],
+            }
+
+        return result
+
     def get_chat_messages(self, user_id: str, limit: int) -> List[str]:
         messages_ref = self.chat_collection.document(user_id).collection("messages")
         query = messages_ref.order_by(

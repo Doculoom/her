@@ -1,15 +1,22 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from langchain_core.prompts import PromptTemplate
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Depends
 
-from app.agents.chat_agent import ChatAgent
+from app.core.constants import USER_INACTIVE_MESSAGE
 from app.core.llm import get_langchain_model
 from app.core.prompt_templates import her_agent_template
-from app.models.agent_models import HerResponse
+from app.models.agent_models import HerResponse, ChatAgentState
 from app.services.firestore.users_service import FirestoreUserService
-from app.services.message_handler import *
+from app.services.message_handler import (
+    respond_to_user,
+    cortex,
+    handle_telegram_message,
+    initiate_chat,
+    finish_sending_message,
+)
 from app.services.vault_service import store_user_channel
+from app.utils.cloud_tasks import add_to_cloud_tasks
 from app.utils.helper import verify_telegram_secret_token
 
 router = APIRouter()
@@ -79,11 +86,33 @@ async def respond(request: Request, background_tasks: BackgroundTasks):
 @router.post("/chat")
 async def chat(background_tasks: BackgroundTasks):
     users = user_service.list_users()
+    user_ids = [u["user_id"] for u in users]
+    limit = 3
+
+    res = user_service.get_user_activity_and_last_agent_check(
+        user_ids=user_ids, limit=limit
+    )
+
     for user in users:
         user_name = user.get("user_name")
         user_id = user.get("user_id")
-        channel_id = user.get("channel_id")
-        background_tasks.add_task(ChatAgent().act, user_name, user_id, channel_id)
+        chat_id = user.get("channel_id")
+
+        if res[user_id]["agent_count"] >= limit:
+            if USER_INACTIVE_MESSAGE not in res[user_id]["history"][-1]:
+                await finish_sending_message(
+                    chat_id, user_id, user_name, USER_INACTIVE_MESSAGE, True
+                )
+                continue
+
+        state = {
+            "user_id": user_id,
+            "user_name": user_name,
+            "user_channel": chat_id,
+            "messages": res[user_id]["history"],
+        }
+
+        background_tasks.add_task(initiate_chat, state=ChatAgentState(**state))
 
     return {"ok": True}
 

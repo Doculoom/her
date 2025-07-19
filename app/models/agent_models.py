@@ -35,7 +35,7 @@ class HerResponse(BaseModel):
     search_needed: bool = Field(
         default=False,
         description=(
-            "True ONLY if you need live internet data; " "otherwise leave false."
+            "True ONLY if you need live internet data; otherwise leave false."
         ),
     )
     search_query: Optional[str] = Field(
@@ -46,16 +46,41 @@ class HerResponse(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    message: str = Field(description="The message if you want to initiate the chat")
-    user_id: str = Field(
-        description="The user_id for the user who you want to send the message"
-    )
+    response: str = Field(description="The message if you want to initiate the chat")
     initiate_chat: bool = Field(
         description="Boolean indicating if the agent wants to initiated the chat with the user"
     )
+    context: Optional[str] = Field(
+        description=(
+            "Information for the next agent.\n\n"
+            "f the next agent is the MemoryAgent → provide a short phrase to embed for vector search "
+            '(e.g., "Vinay dog").\n\n'
+            "If the next agent is the SearchAgent** → include:\n"
+            " 1. Conversational context (why the user is asking).\n"
+            " 2. Any relevant user memories or preferences.\n"
+            " 3. Tone / style hints so the reply feels like a human friend.\n\n"
+            "Example for SearchAgent:\n"
+            '"User name: <Name>.  He’s been tracking Tesla stock all week and is excited when it’s up. '
+            "Explain the price in a friendly, concise tone and the reason why it went up. If TSLA is up, congratulate "
+            "him with something like"
+            "'Nice! Looks like good new for <Vinay> Tesla’s having a good day 🚀'. "
+            'If it’s down, empathize gently."\n'
+        )
+    )
+    search_needed: bool = Field(
+        default=False,
+        description=(
+            "True ONLY if you need live internet data; otherwise leave false."
+        ),
+    )
+    search_query: Optional[str] = Field(
+        description=(
+            "Best Google search query to feed to the SearchAgent when search_needed=true."
+        )
+    )
 
 
-class HerState(TypedDict):
+class AgentState(TypedDict):
     user_id: str
     user_name: str
     user_channel: str
@@ -63,5 +88,14 @@ class HerState(TypedDict):
     messages: Annotated[List, add_messages]
     context: Optional[str]
     search_query: Optional[str]
-    retrieved_memories: Optional[str]
     search_needed: bool
+    response: Optional[str]
+
+
+class HerState(AgentState):
+    retrieved_memories: Optional[str]
+
+
+class ChatAgentState(AgentState):
+    initiate_chat: bool
+    inactive_message_sent: bool

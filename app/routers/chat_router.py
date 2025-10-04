@@ -98,13 +98,6 @@ async def chat(background_tasks: BackgroundTasks):
         user_id = user.get("user_id")
         chat_id = user.get("channel_id")
 
-        if res[user_id]["agent_count"] >= limit:
-            if USER_INACTIVE_MESSAGE not in res[user_id]["history"][-1]:
-                # await finish_sending_message(
-                #     chat_id, user_id, user_name, USER_INACTIVE_MESSAGE, True
-                # )
-                continue
-
         state = {
             "user_id": user_id,
             "user_name": user_name,
